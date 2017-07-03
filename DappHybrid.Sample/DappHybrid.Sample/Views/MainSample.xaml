@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DappHybrid.Sample.Views.MainSample"
+             xmlns:pages="clr-namespace:DappHybrid.Sample.Views;assembly=DappHybrid.Sample.Views"
+             xmlns:fwv="clr-namespace:Xam.Plugin.Abstractions;assembly=WebView.Plugin.Abstractions"
+             Title="TabbedPage">
+   
+   
+    <ContentPage Title="Dapp">
+        <Grid x:Name="containerLayout">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <fwv:FormsWebView x:Name="webHybridDapp" ContentType="Internet"
+                          BackgroundColor="Teal" Grid.Row="0" Grid.Column="0" />
+        </Grid>
+    </ContentPage>
+    <ContentPage Title="Settings">
+        <StackLayout>
+            <Label Text="Private Key" FontSize="Medium" />
+            <Entry Text="{Binding Settings.PrivateKey}" IsPassword="True" FontSize="Small" />
+            <Label Text="RPC Url" FontSize="Medium" />
+            <Editor Text="{Binding Settings.RpcUrl}" FontSize="Small" Margin="0" />
+            <Button Text="Change / Reload Dapp" Clicked="Button_Clicked" x:Name="btnChange" />
+        </StackLayout>
+    </ContentPage>
+
+</TabbedPage>
