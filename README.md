@@ -3,16 +3,98 @@
 The Nethereum DappHybrid is a cross platform hybrid hosting mechanism for web based decentralised applications. Currently it has been tested on UWP (Windows Desktop), Android and iOS. Samples for Mac, Linux and WPF will be available as they appear or come out of beta on Xamarin.Forms.
 
 ## Why?
-
-There are times when you don't have time or there is not business benefit to create a cross-platform native application (i.e using Xamarin.Forms, or React Native), but you still want to provide a native applications (either on mobile or desktop) in which they can load and / or manage the ethereum accounts.
+You have created an html / javascript dapp, and you want to provide a cross platform "native" desktop / mobile application reusing your existing dapp (as opposed to creating a new Xamarin.Forms implementation as an example), but still want to have the capability for your application to manage the rpc connections and manage the accounts internally (i.e sigining trasactions)
 
 ## How does it work ?
+Using a webview to host the application, and similarly to  Metamask, a web3.js provider has been created that is injected on a web host, allowing the rpc connection configuration and the interception of any RPC method, which we want to manage internally.
 
-Similarly to  Metamask, a provider has been created that is injected on a web host, allowing the interception of any RPC method. 
+### The WebView Host
+First of all we need a WebView to host the html / javascript dapp.  The sample uses the Xamarin.Forms plugin "Xam.Plugin.WebView", this is a great plugin with cross platform JavaScript invocation and injection support, reducing the need of creating and managing our own HybridView.
 
-This way your application can control and manage the accounts and offline transaction signing.
+```xml
+ <fwv:FormsWebView x:Name="webHybridDapp" ContentType="Internet"
+                          BackgroundColor="Teal" Grid.Row="0" Grid.Column="0" />
+```
 
-## Request sample
+### Injecting Web3js and our Custom Provider
+
+When our dapp page has been loaded, we will then inject our Web3js, our custom Nethereum Provider, web3 initialisation and finally retrigger the "load" event to ensure our page is intialised with the injected web3 and provider.
+
+```csharp
+webHybridDapp.OnContentLoaded += (cobj) =>
+            {
+                //Inject web3 script bundle
+                webHybridDapp.InjectJavascript(dappHybridViewModel.ProviderService.GetWeb3Script());
+                webHybridDapp.InjectJavascript(dappHybridViewModel.ProviderService.GetNethereumEmbeddedProviderScript());
+                webHybridDapp.InjectJavascript(dappHybridViewModel.ProviderService.GetWeb3InitScript());
+                //trigger the event load, as the usual pattern is to startup dapps on load with web3 injected
+                webHybridDapp.InjectJavascript("dispatchEvent(new Event('load'));");
+            };
+```
+
+Our dapp will need to have the same intialiasation checks as per Metamask, so when loaded our custom provider will be injected.
+
+```
+window.addEventListener('load', function() {
+
+  // Checking if Web3 has been injected by the host
+  if (typeof web3 !== 'undefined') {
+    // Use the host provider
+    window.web3 = new Web3(web3.currentProvider);
+  } else {
+    //default settings
+    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  }
+  // Now you can start your app & access web3 freely:
+  startApp()
+
+})
+```
+
+Finally we need to register the callback method from our provider to the C# Host, this generic method is the one responsible to accept all the calls from the dapp into our .net host.
+
+```csharp
+ webHybridDapp.RegisterLocalCallback(Nethereum.DappHybrid.Scripts.CallToDappHostFunctionName, DappCallBack);
+```
+
+The callback data will be then pass to our ProviderService
+
+```csharp
+public async void DappCallBack(string data)
+        {
+            try
+            {
+                var response = await dappHybridViewModel.ProviderService.SendRequestAsync(data);
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    webHybridDapp.InjectJavascript(response);
+
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+                await DisplayAlert("Error", ex.Message, "Ok");
+            }
+        }
+```
+
+### The provider service
+The provider service manages the registration of the requests to intercept, the building of our custom provider and web3 intialisation and the routing of callbacks to the requests registered.
+
+For example on our ViewModel we can initialise our Provider with the url of the rpc client like "http://mainnet.infura.io:8545", and our Account initialised with its private key from key store, or if it is a ManagedAccount with the unlocking password.
+
+```csharp
+ ProviderService = new ProviderRequestService(Settings.RpcUrl, Settings.Account);
+ ProviderService.RegisterProviderRequest(new EthAccountsProviderRequest());
+ EthSendTransactionProviderRequest = new EthSendTransactionProviderRequest();
+ ProviderService.RegisterProviderRequest(EthSendTransactionProviderRequest);
+```
+
+### Request sample
+Signing transaction is probably the most common use case for intercepting a request. 
+
+To implement this custom request we need to provide the javascript async implementation, sync implementation and the SendRequest implementation in C#.
 
 ```csharp
  public class EthSendTransactionProviderRequest : IRpcProviderRequest, IRpcRequestRequiredAccount
@@ -70,9 +152,5 @@ This way your application can control and manage the accounts and offline transa
         }
     }
 
-
 ```
-
-
-
 
