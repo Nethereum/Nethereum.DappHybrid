@@ -18,7 +18,7 @@ namespace DappHybrid.Sample.Views
     public partial class MainSample : TabbedPage
     {
         DappHybridViewModel dappHybridViewModel;
-        string SourceUrl = "https://oasisdex.com";
+        string SourceUrl = "http://flappyeth.nethereum.com/";
 
         public MainSample()
         {
@@ -132,8 +132,8 @@ namespace DappHybrid.Sample.Views
 
         public SettingsViewModel()
         {
-            this.RpcUrl = "https://kovan.infura.io/";
-            this.PrivateKey = "";
+            this.RpcUrl = "https://mainnet.infura.io/";
+            this.PrivateKey = "0xb5b1870957d373ef0eeffecc6e4812c0fd08f554b37b233526acc331bf1544f7";
         }
 
         public IAccount Account { get; set; }

@@ -26,6 +26,7 @@
         <uap:Rule Match="https://flappyeth.surge.sh/" Type="include" WindowsRuntimeAccess="none" />
         <uap:Rule Match="https://gentle-porter.surge.sh/" Type="include" WindowsRuntimeAccess="none" />
         <uap:Rule Match="https://tokenfactory.surge.sh" Type="include" WindowsRuntimeAccess="none" />
+        <uap:Rule Match="http://flappyeth.nethereum.com/" Type="include" WindowsRuntimeAccess="none" />
       </uap:ApplicationContentUriRules>
     </Application>
   </Applications>
