@@ -132,7 +132,9 @@ namespace DappHybrid.Sample.Views
 
         public SettingsViewModel()
         {
-            this.RpcUrl = "https://mainnet.infura.io/";
+            this.RpcUrl = "https://
+goerli.infura.io/v3/7238211010344719ad14a89db874158c
+";
             this.PrivateKey = "0xb5b1870957d373ef0eeffecc6e4812c0fd08f554b37b233526acc331bf1544f7";
         }
 
